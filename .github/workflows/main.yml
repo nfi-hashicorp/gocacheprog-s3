@@ -1,0 +1,35 @@
+on: 
+  push:
+    branches: [main]
+env:
+  GO_VERSION: 1.22.2
+  DOCKER_TAG_OUR_VERSION: "latest"
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and publish to GHCR
+        env:
+          DOCKER_TAG_OUR_VERSION: "latest"
+        run: |
+          docker buildx create \
+            --name container \
+            --driver=docker-container \
+            --use
+          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+          docker buildx build \
+            --cache-from=ghcr.io/${{ github.repository }}:_cache \
+            --cache-to=ghcr.io/${{ github.repository }}:_cache \
+            --build-arg GO_VERSION=${GO_VERSION} \
+            -t ghcr.io/${{ github.repository }}:go${GO_VERSION}-${DOCKER_TAG_OUR_VERSION} \
+            --push \
+            --target=gocacheprog-s3 \
+            -f Dockerfile .
+
+    outputs:
+      image: ghcr.io/${{ github.repository }}

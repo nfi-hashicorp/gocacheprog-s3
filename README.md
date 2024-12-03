@@ -2,6 +2,10 @@
 
 `gocacheprog-s3` is a "cacheprog" for Go that uses S3.
 
+⚠️ Apparently a few people have actually found this repo and may even be using it! ⚠️ Consider this a proof-of-concept/prototype! :warning: I wrote it in a fugue state. ⚠️ Do not use for real. ⚠️ Do not expect support. ⚠️ Do not expect PRs to be looked at, reviewed, or merged. ⚠️ Do not water after midnight. ⚠️
+
+(That said, if you do find it's useful and want to take over and do real releases, do feel free to reach out.)
+
 # Usage
 
 [As of writing (Apr 2024), `GOCACHEPROG` support requires a custom build of the Go toolchain](https://github.com/golang/go/issues/64876). As such, we provide a Docker image with both a custom build of the Go toolchain and the `gocacheprog-s3` binary baked in.

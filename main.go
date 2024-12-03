@@ -15,10 +15,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go/logging"
+	"github.com/nfi-hashicorp/gocacheprog-s3/go-tool-cache/cacheproc"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-
-	"github.com/bradfitz/go-tool-cache/cacheproc"
 )
 
 const defaultS3Prefix = "go-cache"
@@ -34,6 +33,7 @@ var (
 	flagQueueLen      = flag.Int("queue-len", 0, "length of the queue for async s3 cache (0=synchronous)")
 	flagWorkers       = flag.Int("workers", 1, "number of workers for async s3 cache (1=synchronous)")
 	flagMetCSV        = flag.String("metrics-csv", "", "write s3 Get/Put metrics to a CSV file (empty=disabled)")
+	flagBucket        = flag.String("bucket", "", "s3 bucket to use (empty=use $GOCACHEPROGS3_BUCKET)")
 )
 
 // logHandler implements slog.Handler to print logs nicely
@@ -119,10 +119,13 @@ var levelTrace = slog.Level(slog.LevelDebug - 4)
 
 func main() {
 	flag.Parse()
-	if len(flag.Args()) != 1 {
-		log.Fatalf("usage: %s <bucket>", os.Args[0])
+	bucket = *flagBucket
+	if bucket == "" {
+		bucket = os.Getenv("GOCACHEPROGS3_BUCKET")
+		if bucket == "" {
+			log.Fatal("neither --bucket nor GOCACHEPROGS3_BUCKET environment variable set")
+		}
 	}
-	bucket = flag.Args()[0]
 	logLevel := slog.Level(*flagVerbose*-4 + 8)
 	h := &logHandler{
 		Level: logLevel,

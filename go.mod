@@ -1,6 +1,8 @@
 module github.com/nfi-hashicorp/gocacheprog-s3
 
-go 1.21
+go 1.24
+
+toolchain go1.24.3
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.26.1
@@ -10,8 +12,6 @@ require (
 	// NOTE: I have not vetted this module
 	go.uber.org/atomic v1.11.0
 )
-
-require github.com/bradfitz/go-tool-cache v0.0.0-20230425225207-ef6c7b1b26e9
 
 require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.2 // indirect

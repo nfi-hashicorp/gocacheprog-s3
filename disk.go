@@ -80,13 +80,13 @@ func (c *DiskCache) Get(_ context.Context, actionID string) (outputID, diskPath 
 	return ie.OutputID, filepath.Join(c.dir, fmt.Sprintf("o-%v", ie.OutputID)), nil
 }
 
-func (c *DiskCache) Put(_ context.Context, actionID, objectID string, size int64, body io.Reader) (diskPath string, _ error) {
+func (c *DiskCache) Put(_ context.Context, actionID, outputID string, size int64, body io.Reader) (diskPath string, _ error) {
 	if !c.started {
 		log.Fatal("not started")
 	}
 	c.Counts.puts.Add(1)
-	c.log.Debug("put", "actionID", actionID, "objectID", objectID, "size", size)
-	file := filepath.Join(c.dir, fmt.Sprintf("o-%s", objectID))
+	c.log.Debug("put", "actionID", actionID, "outputID", outputID, "size", size)
+	file := filepath.Join(c.dir, fmt.Sprintf("o-%s", outputID))
 
 	// Special case empty files; they're both common and easier to do race-free.
 	if size == 0 {
@@ -110,7 +110,7 @@ func (c *DiskCache) Put(_ context.Context, actionID, objectID string, size int64
 
 	ij, err := json.Marshal(indexEntry{
 		Version:   1,
-		OutputID:  objectID,
+		OutputID:  outputID,
 		Size:      size,
 		TimeNanos: time.Now().UnixNano(),
 	})

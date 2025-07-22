@@ -9,7 +9,10 @@
 // the cache interface.
 package wire
 
-import "io"
+import (
+	"io"
+	"time"
+)
 
 // Cmd is a command that can be issued to a child process.
 //
@@ -17,31 +20,29 @@ import "io"
 // commands like "get2".
 type Cmd string
 
+// from https://pkg.go.dev/cmd/go/internal/cacheprog@master#pkg-constants
 const (
 	CmdGet   = Cmd("get")
 	CmdPut   = Cmd("put")
 	CmdClose = Cmd("close")
 )
 
-// Request is the JSON-encoded message that's sent from cmd/go to
-// the GOCACHEPROG child process over stdin. Each JSON object is on its
-// own line. A Request of Type "put" with BodySize > 0 will be followed
-// by a line containing a base64-encoded JSON string literal of the body.
+// from https://pkg.go.dev/cmd/go/internal/cacheprog@master#Request
 type Request struct {
 	// ID is a unique number per process across all requests.
 	// It must be echoed in the Response from the child.
 	ID int64
 
 	// Command is the type of request.
-	// The cmd/go tool will only send commands that were declared
+	// The go command will only send commands that were declared
 	// as supported by the child.
 	Command Cmd
 
-	// ActionID is non-nil for get and puts.
+	// ActionID is the cache key for "put" and "get" requests.
 	ActionID []byte `json:",omitempty"` // or nil if not used
 
-	// ObjectID is set for Type "put" and "output-file".
-	ObjectID []byte `json:",omitempty"` // or nil if not used
+	// OutputID is stored with the body for "put" requests.
+	OutputID []byte `json:",omitempty"` // or nil if not used
 
 	// Body is the body for "put" requests. It's sent after the JSON object
 	// as a base64-encoded JSON string when BodySize is non-zero.
@@ -55,14 +56,7 @@ type Request struct {
 	BodySize int64 `json:",omitempty"`
 }
 
-// Response is the JSON response from the child process to cmd/go.
-//
-// With the exception of the first protocol message that the child writes to its
-// stdout with ID==0 and KnownCommands populated, these are only sent in
-// response to a Request from cmd/go.
-//
-// Responses can be sent in any order. The ID must match the request they're
-// replying to.
+// from https://pkg.go.dev/cmd/go/internal/cacheprog@master#Response
 type Response struct {
 	ID  int64  // that corresponds to Request; they can be answered out of order
 	Err string `json:",omitempty"` // if non-empty, the error
@@ -71,20 +65,17 @@ type Response struct {
 	// writes to stdout on startup (with ID==0). It includes the
 	// Request.Command types that are supported by the program.
 	//
-	// This lets us extend the gracefully over time (adding "get2", etc), or
-	// fail gracefully when needed. It also lets us verify the program
-	// wants to be a cache helper.
+	// This lets the go command extend the protocol gracefully over time (adding
+	// "get2", etc), or fail gracefully when needed. It also lets the go command
+	// verify the program wants to be a cache helper.
 	KnownCommands []Cmd `json:",omitempty"`
 
-	// For Get requests.
+	Miss     bool       `json:",omitempty"` // cache miss
+	OutputID []byte     `json:",omitempty"` // the OutputID stored with the body
+	Size     int64      `json:",omitempty"` // body size in bytes
+	Time     *time.Time `json:",omitempty"` // when the object was put in the cache (optional; used for cache expiration)
 
-	Miss      bool   `json:",omitempty"` // cache miss
-	OutputID  []byte `json:",omitempty"`
-	Size      int64  `json:",omitempty"`
-	TimeNanos int64  `json:",omitempty"` // TODO(bradfitz): document
-
-	// DiskPath is the absolute path on disk of the ObjectID corresponding
-	// a "get" request's ActionID (on cache hit) or a "put" request's
-	// provided ObjectID.
+	// DiskPath is the absolute path on disk of the body corresponding to a
+	// "get" (on cache hit) or "put" request's ActionID.
 	DiskPath string `json:",omitempty"`
 }

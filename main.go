@@ -18,7 +18,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 
-	"github.com/bradfitz/go-tool-cache/cacheproc"
+	"github.com/nfi-hashicorp/gocacheprog-s3/go-tool-cache/cacheproc"
 )
 
 const defaultS3Prefix = "go-cache"

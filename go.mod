@@ -13,10 +13,6 @@ require (
 	go.uber.org/atomic v1.11.0
 )
 
-require github.com/bradfitz/go-tool-cache v0.0.0-20230425225207-ef6c7b1b26e9
-
-replace github.com/bradfitz/go-tool-cache => ./go-tool-cache
-
 require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.10 // indirect

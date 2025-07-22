@@ -22,7 +22,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/bradfitz/go-tool-cache/wire"
+	"github.com/nfi-hashicorp/gocacheprog-s3/go-tool-cache/wire"
 )
 
 // Process implements the cmd/go JSON protocol over stdin & stdout via three
@@ -192,7 +192,7 @@ func (p *Process) handlePut(ctx context.Context, req *wire.Request, res *wire.Re
 	defer func() {
 		if retErr != nil {
 			p.PutErrors.Add(1)
-			log.Printf("put(action %s, obj %s, %v bytes): %v", actionID, outputID, req.BodySize, retErr)
+			log.Printf("put(action %s, output %s, %v bytes): %v", actionID, outputID, req.BodySize, retErr)
 		}
 	}()
 	if p.Put == nil {
